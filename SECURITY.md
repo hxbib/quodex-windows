@@ -26,4 +26,5 @@ The public OpenAI device-code client id `app_EMoamEEZ73f0CkXaXp7hrann` is the sa
 
 ## Reporting
 
-Open a GitHub issue on this repository. Do not attach vault files, tokens, or device codes.
+Email [contact@curzohlabs.com](mailto:contact@curzohlabs.com) or open a private GitHub security advisory on this repository. Do not attach vault files, tokens, or device codes.
+
