@@ -1,0 +1,16 @@
+{
+  "name": "quodex",
+  "productName": "Quodex",
+  "version": "1.0.1",
+  "description": "Windows ChatGPT usage tracker — tray companion to the macOS original.",
+  "private": true,
+  "type": "module",
+  "main": "main.mjs",
+  "author": "Quodex contributors",
+  "license": "MIT",
+  "homepage": "https://github.com/hxbib/quodex-windows",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hxbib/quodex-windows.git"
+  }
+}

@@ -1,0 +1,10 @@
+Quodex for Windows
+Copyright (c) 2026 Quodex contributors
+Licensed under the MIT License. See LICENSE.
+
+The portable Windows build bundles Electron and Chromium.
+Those components keep their own licenses, shipped in the zip as
+LICENSE.electron.txt and LICENSES.chromium.html.
+
+Electron: https://github.com/electron/electron
+Chromium: https://www.chromium.org/

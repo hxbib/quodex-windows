@@ -1,0 +1,36 @@
+{
+  "name": "quodex",
+  "version": "1.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Windows ChatGPT usage tracker — tray companion to the macOS original.",
+  "license": "MIT",
+  "homepage": "https://github.com/hxbib/quodex-windows",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hxbib/quodex-windows.git"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/lib/quodex/transitions.test.ts src/lib/site.test.ts",
+    "pack:windows": "node scripts/pack-windows.mjs"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.510.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.5.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^22.16.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^5.7.0",
+    "vite": "^8.2.0"
+  }
+}
