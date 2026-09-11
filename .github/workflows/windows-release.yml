@@ -5,6 +5,9 @@ on:
   push:
     tags: ["v*"]
 
+permissions:
+  contents: write
+
 jobs:
   pack:
     runs-on: windows-latest
@@ -24,6 +27,13 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run pack:windows
+      - name: Guard zip size
+        shell: bash
+        run: |
+          bytes=$(wc -c < artifacts/Quodex-windows-x64.zip)
+          echo "zip bytes=$bytes"
+          test "$bytes" -gt 200000
+          test "$bytes" -lt 20000000
       - uses: actions/upload-artifact@v4
         with:
           name: Quodex-windows-x64
@@ -33,7 +43,9 @@ jobs:
       - if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          name: Quodex for Windows ${{ github.ref_name }}
+          body_path: GITHUB-RELEASE.md
+          fail_on_unmatched_files: true
           files: |
             artifacts/Quodex-windows-x64.zip
             artifacts/SHA256SUMS.txt

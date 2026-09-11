@@ -12,12 +12,13 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pipeline } from "node:stream/promises";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const OUT_DIR = "/tmp/Quodex-windows-x64";
+const OUT_DIR = join(tmpdir(), "Quodex-windows-x64");
 const ZIP_PATH = join(ROOT, "artifacts", "Quodex-windows-x64.zip");
 const TARGET = "x86_64-pc-windows-msvc";
 
@@ -44,6 +45,10 @@ function which(bin) {
   return null;
 }
 
+function pythonBin() {
+  return which("python3") || which("python") || "python3";
+}
+
 async function writeIco() {
   const { spawnSync } = await import("node:child_process");
   const script = `
@@ -60,7 +65,7 @@ src32 = icons / "32x32.png"
 if not src32.exists():
     shutil.copyfile(root / "public" / "icon-192.png", src32)
 `;
-  const result = spawnSync("python3", ["-c", script], { cwd: ROOT, stdio: "inherit" });
+  const result = spawnSync(pythonBin(), ["-c", script], { cwd: ROOT, stdio: "inherit" });
   if (result.status !== 0) throw new Error("icon.ico");
 }
 
@@ -80,7 +85,7 @@ with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
             path = os.path.join(dirpath, filename)
             z.write(path, path.replace(os.sep, "/"))
 `;
-  await run("python3", ["-c", script]);
+  await run(pythonBin(), ["-c", script]);
 }
 
 function collectReleaseDir() {
