@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { clampRect, centeredRect, oppositeSnap, type Rect } from "./geometry";
+import { clampRect, centeredRect, fitRect, oppositeSnap, type Rect } from "./geometry";
 import type { SnapLayout, WindowId, WindowState } from "./types";
 
 export type { SnapLayout, WindowId, WindowState };
@@ -73,7 +73,6 @@ export interface DesktopState {
   recycle: RecycledAccount[];
   startAllApps: boolean;
   enteredDesktop: boolean;
-  welcomeTipShown: boolean;
   hydrate: () => void;
   setTheme: (theme: "dark" | "light") => void;
   toggleTheme: () => void;
@@ -113,7 +112,6 @@ export interface DesktopState {
   wake: () => void;
   enterDesktop: () => void;
   lockDesktop: () => void;
-  dismissWelcomeTip: () => void;
   setQuodexPinned: (pinned: boolean) => void;
   setQuodexPage: (page: "home" | "settings") => void;
   setRemoveTarget: (id: string | null) => void;
@@ -130,7 +128,7 @@ export interface DesktopState {
 }
 
 const defaults: Record<WindowId, WindowState> = {
-  quodex: { open: true, minimized: false, maximized: false, snap: null, x: 220, y: 44, w: 560, h: 660 },
+  quodex: { open: true, minimized: false, maximized: false, snap: null, x: 220, y: 44, w: 560, h: 720 },
   settings: { open: false, minimized: false, maximized: false, snap: null, x: 160, y: 72, w: 860, h: 620 },
   explorer: { open: false, minimized: false, maximized: false, snap: null, x: 120, y: 90, w: 780, h: 540 },
   taskmgr: { open: false, minimized: false, maximized: false, snap: null, x: 280, y: 120, w: 520, h: 420 },
@@ -195,9 +193,12 @@ export const useDesktopStore = create<DesktopState>()(
       recycle: [],
       startAllApps: false,
       enteredDesktop: false,
-      welcomeTipShown: false,
 
       hydrate: () => {
+        if (typeof window !== "undefined" && window.quodexNative?.isNative) {
+          set({ hydrated: true, power: "on", enteredDesktop: true });
+          return;
+        }
         try {
           sessionStorage.removeItem("quodex-session-entered");
         } catch {
@@ -231,8 +232,8 @@ export const useDesktopStore = create<DesktopState>()(
           snapPreview: null,
           snapAssist: null,
           peeking: false,
-          power: liveUnlocked ? "on" : "lock",
-          enteredDesktop: liveUnlocked,
+          power: liveUnlocked || get().enteredDesktop ? "on" : "lock",
+          enteredDesktop: liveUnlocked || get().enteredDesktop,
           quodexAlive: true,
         });
       },
@@ -274,7 +275,9 @@ export const useDesktopStore = create<DesktopState>()(
         const closing = state.flyout === flyout;
         const next = closing
           ? flyout === "quodex-tray"
-            ? null
+            ? state.quodexPinned
+              ? "quodex-tray"
+              : null
             : pinnedFlyout(state, null)
           : flyout;
         set({
@@ -322,7 +325,17 @@ export const useDesktopStore = create<DesktopState>()(
         if (get().snapPreview === layout) return;
         set({ snapPreview: layout });
       },
-      setViewport: (w, h) => set({ viewport: { w, h } }),
+      setViewport: (w, h) => {
+        const view = get().viewport;
+        if (view.w === w && view.h === h) return;
+        const windows = { ...get().windows };
+        (Object.keys(windows) as WindowId[]).forEach((id) => {
+          const win = windows[id];
+          if (win.maximized || win.snap) return;
+          windows[id] = { ...win, ...fitRect(win, w, h) };
+        });
+        set({ viewport: { w, h }, windows });
+      },
       setPeeking: (peeking) => set({ peeking }),
       setPower: (power) =>
         set({
@@ -425,17 +438,28 @@ export const useDesktopStore = create<DesktopState>()(
       },
 
       focusWindow: (id) => {
-        const win = get().windows[id];
+        const state = get();
+        const win = state.windows[id];
         if (!win.open) return;
         if (win.minimized) {
-          const windows = { ...get().windows };
+          const windows = { ...state.windows };
           windows[id] = { ...windows[id], minimized: false };
-          set({ windows, focus: withFocus(get().focus, id), flyout: pinnedFlyout(get(), null), overlay: null, showDesktopIds: null });
+          set({ windows, focus: withFocus(state.focus, id), flyout: pinnedFlyout(state, null), overlay: null, showDesktopIds: null });
+          return;
+        }
+        const flyout = pinnedFlyout(state, null);
+        if (
+          state.focus[state.focus.length - 1] === id &&
+          state.flyout === flyout &&
+          state.jumpList == null &&
+          state.contextMenu == null &&
+          state.overlay == null
+        ) {
           return;
         }
         set({
-          focus: withFocus(get().focus, id),
-          flyout: pinnedFlyout(get(), null),
+          focus: withFocus(state.focus, id),
+          flyout,
           jumpList: null,
           contextMenu: null,
           overlay: null,
@@ -519,8 +543,11 @@ export const useDesktopStore = create<DesktopState>()(
 
       restartDesktop: () => {
         liveUnlocked = true;
+        const view = get().viewport;
+        const centered = centeredRect(view.w, view.h, defaults.quodex.w, defaults.quodex.h);
+        const windows = { ...defaults, quodex: { ...defaults.quodex, ...centered, open: true, minimized: false } };
         set({
-          windows: { ...defaults },
+          windows,
           focus: ["quodex"],
           flyout: null,
           overlay: null,
@@ -567,29 +594,25 @@ export const useDesktopStore = create<DesktopState>()(
 
       enterDesktop: () => {
         liveUnlocked = true;
-        const first = !get().enteredDesktop;
         const view = get().viewport;
         const centered = centeredRect(view.w, view.h, defaults.quodex.w, defaults.quodex.h);
         const windows = { ...get().windows };
-        windows.quodex = { ...windows.quodex, ...centered, open: true, minimized: false, maximized: false, snap: null };
+        const alive = get().quodexAlive;
+        if (alive) {
+          windows.quodex = { ...windows.quodex, ...centered, open: true, minimized: false, maximized: false, snap: null };
+        }
         set({
           power: "on",
           enteredDesktop: true,
-          flyout: null,
+          flyout: get().quodexPinned ? "quodex-tray" : null,
           overlay: null,
           jumpList: null,
           jumpListAt: null,
           windows,
-          focus: withFocus(get().focus, "quodex"),
-          quodexAlive: true,
+          focus: alive
+            ? withFocus(get().focus, "quodex")
+            : get().focus.filter((id) => windows[id]?.open && !windows[id]?.minimized),
         });
-        if (first) {
-          get().pushNotification({
-            title: "Quodex for Windows",
-            body: "Sample accounts are open. Download the installer to track your own ChatGPT usage.",
-            source: "quodex",
-          });
-        }
       },
 
       lockDesktop: () => {
@@ -604,8 +627,6 @@ export const useDesktopStore = create<DesktopState>()(
           titleMenu: null,
         });
       },
-
-      dismissWelcomeTip: () => set({ welcomeTipShown: true }),
 
       setQuodexPinned: (pinned) =>
         set({
@@ -654,7 +675,7 @@ export const useDesktopStore = create<DesktopState>()(
     }),
     {
       name: "quodex-desktop-v2",
-      version: 4,
+      version: 5,
       partialize: (state) => ({
         theme: state.theme,
         accent: state.accent,
@@ -666,7 +687,6 @@ export const useDesktopStore = create<DesktopState>()(
         settingsSection: state.settingsSection,
         minimizeToTray: state.minimizeToTray,
         trayHintShown: state.trayHintShown,
-        welcomeTipShown: state.welcomeTipShown,
         quodexPinned: state.quodexPinned,
       }),
       migrate: (persisted) => {
@@ -682,7 +702,6 @@ export const useDesktopStore = create<DesktopState>()(
           settingsSection: data.settingsSection,
           minimizeToTray: data.minimizeToTray,
           trayHintShown: data.trayHintShown,
-          welcomeTipShown: data.welcomeTipShown,
           quodexPinned: data.quodexPinned,
         };
       },

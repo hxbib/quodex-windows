@@ -32,7 +32,8 @@ function triggerDownload(href: string, filename?: string) {
 }
 
 export function downloadWindowsApp() {
-  const local = SITE.asset;
+  const base = (import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+  const local = `${base}Quodex-windows-x64.zip`;
   void fetch(local, { method: "HEAD" })
     .then((response) => {
       if (response.ok) {

@@ -42,7 +42,7 @@ export function LoginView() {
             <Download className="text-win-accent" size={40} strokeWidth={1.4} />
             <h3 className="text-[18px] font-semibold">Real sign-in lives in the Windows app</h3>
             <p className="max-w-md text-[13px] leading-relaxed text-win-muted">
-              This website is a live Windows 11 desktop with sample accounts. Download the installer to sign in with OpenAI’s device code — tokens stay in a DPAPI vault on your PC.
+              This website is a live Windows 11 desktop with sample accounts. Download the Windows app to sign in with OpenAI’s device code — tokens stay in a DPAPI vault on your PC.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               <button type="button" className="fluent-btn fluent-btn-accent" onClick={downloadWindowsApp}>

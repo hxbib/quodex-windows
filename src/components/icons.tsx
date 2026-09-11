@@ -17,48 +17,49 @@ function Svg({ size = 20, ...props }: IconProps) {
 
 export function QuodexMark({ size = 20, ...props }: IconProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" {...props}>
-      <path
-        d="M4.4 8.2a7.6 7.6 0 1 1 0 7.6"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M8.6 12a3.4 3.4 0 1 1 1 2.4"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
+    <svg width={size} height={size} viewBox="0 0 1024 1024" fill="none" aria-hidden="true" {...props}>
+      <g stroke="currentColor" strokeWidth="88" strokeLinecap="round">
+        <path d="M226 347A330 330 0 0 1 512 182A330 330 0 0 1 842 512A330 330 0 0 1 512 842A330 330 0 0 1 226 677" />
+        <path d="M512 715A203 203 0 0 1 309 512A203 203 0 0 1 512 309A203 203 0 0 1 715 512A203 203 0 0 1 688 614" />
+      </g>
     </svg>
   );
 }
 
 export function QuodexAppIcon({ size = 32 }: { size?: number }) {
-  const id = useId();
+  const uid = useId().replace(/:/g, "");
+  const bg = `${uid}-bg`;
+  const mark = `${uid}-mark`;
+  const shadow = `${uid}-shadow`;
+  const crisp = size < 22;
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill={`url(#${id})`} />
+    <svg width={size} height={size} viewBox="0 0 1024 1024" aria-hidden="true">
       <defs>
-        <linearGradient id={id} x1="4" y1="2" x2="30" y2="30">
+        <linearGradient id={bg} x1="100" y1="80" x2="924" y2="944" gradientUnits="userSpaceOnUse">
           <stop stopColor="#1677FF" />
-          <stop offset="1" stopColor="#3B6AE8" />
+          <stop offset="1" stopColor="#6A42E8" />
         </linearGradient>
+        <linearGradient id={mark} x1="210" y1="180" x2="820" y2="860" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#FFFFFF" />
+          <stop offset="1" stopColor="#DCE8FF" />
+        </linearGradient>
+        {crisp ? null : (
+          <filter id={shadow} x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="24" stdDeviation="28" floodColor="#24146A" floodOpacity="0.3" />
+          </filter>
+        )}
       </defs>
-      <path
-        d="M7.2 11.4a9.2 9.2 0 1 1 0 9.2"
+      <rect x="56" y="56" width="912" height="912" rx="220" fill={`url(#${bg})`} />
+      <g
+        filter={crisp ? undefined : `url(#${shadow})`}
         fill="none"
-        stroke="#fff"
-        strokeWidth="2.6"
+        stroke={`url(#${mark})`}
+        strokeWidth="88"
         strokeLinecap="round"
-      />
-      <path
-        d="M12.2 16a3.8 3.8 0 1 1 1.15 2.7"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="2.6"
-        strokeLinecap="round"
-      />
+      >
+        <path d="M226 347A330 330 0 0 1 512 182A330 330 0 0 1 842 512A330 330 0 0 1 512 842A330 330 0 0 1 226 677" />
+        <path d="M512 715A203 203 0 0 1 309 512A203 203 0 0 1 512 309A203 203 0 0 1 715 512A203 203 0 0 1 688 614" />
+      </g>
     </svg>
   );
 }

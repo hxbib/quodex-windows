@@ -1,0 +1,27 @@
+[[permission]]
+identifier = "allow-tracker"
+description = "Quodex native commands"
+commands.allow = [
+  "start_device_login",
+  "poll_device_login",
+  "fetch_usage",
+  "delete_tokens",
+  "has_token",
+  "list_identities",
+  "show_toast",
+  "autostart_get",
+  "autostart_set",
+  "window_hide",
+  "window_show",
+  "window_minimize",
+  "window_maximize",
+  "app_quit",
+  "prefs_get",
+  "prefs_set",
+  "open_external",
+  "flyout_pin",
+  "tray_tooltip",
+  "title_theme",
+  "vault_status",
+  "set_alarms"
+]

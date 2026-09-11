@@ -32,6 +32,13 @@ export interface NativeWindowPrefs {
   flyoutPinned?: boolean;
 }
 
+export interface NativeAlarm {
+  id: string;
+  fireAt: number;
+  title: string;
+  body: string;
+}
+
 export interface QuodexNativeBridge {
   isNative: true;
   platform: "win32" | "linux" | "darwin";
@@ -48,6 +55,7 @@ export interface QuodexNativeBridge {
   fetchAccountUsage: (input: { accountID: string }) => Promise<NativeUsageOk | NativeUsageErr>;
   deleteTokens: (accountID: string) => Promise<void>;
   hasToken: (accountID: string) => Promise<boolean>;
+  listIdentities: () => Promise<ChatGPTIdentity[]>;
   notify: (input: { title: string; body: string }) => Promise<void>;
   getAutoStart: () => Promise<boolean>;
   setAutoStart: (enabled: boolean) => Promise<boolean>;
@@ -63,6 +71,7 @@ export interface QuodexNativeBridge {
   setTrayTooltip: (text: string) => Promise<void>;
   setTitleTheme: (theme: "dark" | "light") => Promise<void>;
   getVaultStatus: () => Promise<NativeVaultStatus>;
+  setAlarms: (alarms: NativeAlarm[]) => Promise<void>;
   onCommand: (callback: (command: string) => void) => () => void;
   vault: "dpapi" | "safeStorage" | "none";
 }

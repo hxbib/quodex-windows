@@ -22,13 +22,16 @@ export function NativeApp() {
 
   useEffect(() => {
     let cancelled = false;
-    const timers = new Map<string, number>();
 
     const rehydrate = async () => {
       await Promise.all([useQuodexStore.persist.rehydrate(), useDesktopStore.persist.rehydrate()]);
       if (cancelled) return;
       useQuodexStore.getState().hydrate();
       useDesktopStore.getState().hydrate();
+      const identities = await window.quodexNative?.listIdentities?.();
+      if (!cancelled && identities?.length) {
+        useQuodexStore.getState().restoreFromIdentities(identities);
+      }
       const prefs = await window.quodexNative?.getWindowPrefs();
       if (!cancelled && prefs) {
         if (typeof prefs.flyoutPinned === "boolean") {
@@ -43,36 +46,20 @@ export function NativeApp() {
 
     const reconcileAlarms = () => {
       const now = Date.now();
-      const keep = new Set<string>();
+      const alarms = [];
       for (const account of useQuodexStore.getState().accounts) {
         if (!account.resetNotificationsEnabled || account.isDemo) continue;
         for (const lane of reportedLanes(account.lastSnapshot)) {
           if (!lane.resetAt || lane.resetAt - now <= 5_000) continue;
-          const id = `${account.id}:${laneId(lane)}:${lane.resetAt}`;
-          keep.add(id);
-          if (timers.has(id)) continue;
-          const MAX_TIMEOUT = 2_147_000_000;
-          const wait = lane.resetAt - now;
-          const handle = window.setTimeout(() => {
-            timers.delete(id);
-            if (wait > MAX_TIMEOUT) {
-              reconcileAlarms();
-              return;
-            }
-            void window.quodexNative?.notify({
-              title: "Usage reset",
-              body: `${displayLaneName(lane.group, lane.name)} reset for ${account.email}.`,
-            });
-          }, Math.min(wait, MAX_TIMEOUT));
-          timers.set(id, handle);
+          alarms.push({
+            id: `${account.id}:${laneId(lane)}:${lane.resetAt}`,
+            fireAt: lane.resetAt,
+            title: "Usage reset",
+            body: `${displayLaneName(lane.group, lane.name)} reset for ${account.email}.`,
+          });
         }
       }
-      for (const [id, handle] of timers) {
-        if (!keep.has(id)) {
-          window.clearTimeout(handle);
-          timers.delete(id);
-        }
-      }
+      void window.quodexNative?.setAlarms?.(alarms);
     };
 
     void rehydrate();
@@ -118,12 +105,26 @@ export function NativeApp() {
       if (!flyout) reconcileAlarms();
     }, 15_000);
 
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.repeat) return;
+      const key = event.key.toLowerCase();
+      if (key === "q") {
+        event.preventDefault();
+        void window.quodexNative?.quitApp();
+      }
+      if (key === "w") {
+        event.preventDefault();
+        void window.quodexNative?.hideToTray();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+
     return () => {
       cancelled = true;
       window.clearInterval(clock);
       window.removeEventListener("storage", onStorage);
+      window.removeEventListener("keydown", onKey);
       stopCommand?.();
-      for (const handle of timers.values()) window.clearTimeout(handle);
     };
   }, []);
 
@@ -155,7 +156,7 @@ export function NativeApp() {
         <Dashboard variant="flyout" />
       ) : (
         <>
-          <header className="native-titlebar">
+          <header className="native-titlebar" data-tauri-drag-region>
             <span className="flex items-center gap-2 text-[12px] font-medium">
               <QuodexAppIcon size={16} />
               Quodex

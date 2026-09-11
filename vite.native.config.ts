@@ -21,7 +21,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "../../electron/renderer",
+    outDir: "../../src-tauri/frontend",
     emptyOutDir: true,
     sourcemap: false,
     cssMinify: true,

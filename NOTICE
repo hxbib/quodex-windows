@@ -2,9 +2,13 @@ Quodex for Windows
 Copyright (c) 2026 Quodex contributors
 Licensed under the MIT License. See LICENSE.
 
-The portable Windows build bundles Electron and Chromium.
-Those components keep their own licenses, shipped in the zip as
-LICENSE.electron.txt and LICENSES.chromium.html.
+The portable Windows build is a Tauri 2 app. The usage window is drawn
+by the system WebView2 runtime (Edge), which is not bundled. Tracker
+logic, the DPAPI vault, tray, and the OpenAI allowlist run in a native
+Rust process.
 
-Electron: https://github.com/electron/electron
-Chromium: https://www.chromium.org/
+WebView2 / Edge: Microsoft software, installed with Windows 11 or the
+Evergreen WebView2 Runtime. Not shipped in this zip.
+
+Tauri, Wry, and Tao keep their own licenses:
+https://github.com/tauri-apps/tauri

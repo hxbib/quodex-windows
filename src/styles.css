@@ -23,7 +23,7 @@
   --color-win-critical: #b20a14;
   --color-win-reserve: #fab80a;
   --color-quodex: #1677ff;
-  --color-quodex-deep: #0b4db3;
+  --color-quodex-deep: #6a42e8;
 
   --radius-win: 8px;
   --radius-flyout: 8px;
@@ -122,6 +122,7 @@
     color: var(--color-win-text);
     background: #07101c;
     user-select: none;
+    --taskbar-h: 48px;
   }
 
   .desktop-wallpaper {
@@ -129,7 +130,7 @@
     inset: 0;
     background:
       linear-gradient(180deg, rgb(0 0 0 / 18%), rgb(0 0 0 / 8%) 30%, transparent 55%),
-      url("/wallpaper.jpg") center / cover no-repeat;
+      var(--desktop-wallpaper, url("/wallpaper.jpg")) center / cover no-repeat;
     transform: scale(1.08);
     z-index: 0;
     filter: brightness(var(--wallpaper-brightness, 1));
@@ -167,12 +168,27 @@
     border-radius: var(--radius-win);
     color: var(--color-win-text);
     contain: layout style paint;
-    animation: window-in var(--motion-slow) var(--ease-win);
     box-shadow: var(--shadow-window-quiet);
     transition:
       box-shadow var(--motion-fast) var(--ease-win),
       opacity var(--motion-quick) var(--ease-win),
       filter var(--motion-fast) var(--ease-win);
+  }
+
+  .win-window.is-opening {
+    animation: window-in var(--motion-slow) var(--ease-win) both;
+  }
+
+  .win-window.is-dragging {
+    animation: none;
+    transition: none;
+    will-change: left, top, width, height;
+    user-select: none;
+  }
+
+  .win-window.is-dragging .usage-fill,
+  .win-window.is-dragging .quodex-card {
+    transition: none;
   }
 
   .win-window.is-focused {
@@ -189,6 +205,17 @@
     transition: opacity var(--motion-fast) var(--ease-win);
   }
 
+  .win-window.is-maximized:not(.is-dragging) {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: var(--taskbar-h, 48px) !important;
+    width: auto !important;
+    height: auto !important;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   .win-titlebar {
     display: flex;
     align-items: center;
@@ -201,6 +228,24 @@
     overflow: visible;
     position: relative;
     z-index: 2;
+    user-select: none;
+  }
+
+  .win-window[data-window="quodex"] {
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--color-win-accent) 8%, transparent), transparent 42%),
+      color-mix(in srgb, var(--color-win-fill) 82%, transparent);
+  }
+
+  .win-window[data-window="quodex"] .win-titlebar {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .flyout.is-app-flyout {
+    background: color-mix(in srgb, var(--color-win-fill) 92%, transparent);
+    backdrop-filter: blur(32px) saturate(1.45);
+    -webkit-backdrop-filter: blur(32px) saturate(1.45);
   }
 
   .win-caption {
@@ -340,7 +385,7 @@
 
   .tray-btn {
     height: 40px;
-    min-width: 36px;
+    min-width: 40px;
     padding: 0 8px;
     border: 0;
     border-radius: var(--radius-control);
@@ -351,9 +396,20 @@
     justify-content: center;
     gap: 6px;
     position: relative;
+    line-height: 0;
     transition:
       background-color var(--motion-quick) var(--ease-win),
       transform var(--motion-quick) var(--ease-win);
+  }
+
+  .tray-btn-glyph {
+    width: 40px;
+    min-width: 40px;
+    padding: 0;
+  }
+
+  .tray-btn-glyph svg {
+    display: block;
   }
 
   .tray-btn.is-pinned {
@@ -850,9 +906,13 @@
     position: absolute;
     inset: 0;
     z-index: 80;
-    color: #f4f4f5;
-    cursor: pointer;
-    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .lock-screen:focus,
+  .lock-screen:focus-visible {
+    outline: none;
   }
 
   .lock-bloom {
@@ -893,7 +953,8 @@
     padding: clamp(48px, 12vh, 120px) 16px max(28px, calc(env(safe-area-inset-bottom) + 20px));
     gap: 24px;
     box-sizing: border-box;
-    user-select: text;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .lock-timeblock {
@@ -1033,17 +1094,19 @@
     letter-spacing: -0.03em;
     line-height: 1.15;
     text-wrap: balance;
+    color: rgb(244 244 245 / 96%);
   }
 
   .lock-tagline-em {
     margin: 2px 0 10px;
     font-family: var(--font-display);
     font-size: clamp(1.15rem, 2.6vw, 1.5rem);
-    font-weight: 400;
-    font-style: italic;
+    font-weight: 500;
+    font-style: normal;
     letter-spacing: -0.03em;
     line-height: 1.15;
-    color: rgb(244 244 245 / 88%);
+    color: #2997ff;
+    text-shadow: 0 0 22px rgb(41 151 255 / 28%);
   }
 
   .lock-summary {
@@ -1143,13 +1206,17 @@
     color: rgb(244 244 245 / 52%);
     text-align: center;
     max-width: none;
-    text-wrap: pretty;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    column-gap: 0.4em;
+    row-gap: 4px;
   }
 
   .lock-meta-req {
-    display: block;
+    flex: 1 0 100%;
     letter-spacing: 0.01em;
-    margin-bottom: 4px;
   }
 
   .lock-meta-indie {
@@ -1159,11 +1226,6 @@
   .lock-meta-links {
     display: inline;
     white-space: nowrap;
-  }
-
-  .lock-meta-indie + .lock-meta-links::before {
-    content: "  ";
-    white-space: pre;
   }
 
   .lock-meta a {
@@ -1181,30 +1243,6 @@
     font-size: 11px;
     color: rgb(244 244 245 / 46%);
     margin-top: 18px;
-  }
-
-  .welcome-tip {
-    position: absolute;
-    left: 16px;
-    bottom: 64px;
-    z-index: 46;
-    width: min(320px, calc(100vw - 28px));
-    padding: 14px 16px;
-    border-radius: var(--radius-win);
-    border: 1px solid var(--color-win-stroke-strong);
-    box-shadow: var(--shadow-flyout);
-    animation: flyout-in var(--motion-slow) var(--ease-win) 220ms both;
-    transition:
-      opacity var(--motion-quick) var(--ease-win),
-      transform var(--motion-quick) var(--ease-win),
-      filter var(--motion-quick) var(--ease-win);
-  }
-
-  .welcome-tip.is-leaving {
-    opacity: 0;
-    transform: translateY(8px) scale(0.98);
-    filter: blur(4px);
-    pointer-events: none;
   }
 
   .mobile-site-bar {
@@ -1267,7 +1305,7 @@
     }
 
     .lock-meta-req {
-      display: inline;
+      flex: 0 1 auto;
     }
 
     .lock-meta-indie {
@@ -1275,13 +1313,9 @@
     }
 
     .lock-meta-links {
-      display: block;
-      margin-top: 6px;
+      flex: 1 0 100%;
+      margin-top: 2px;
       white-space: nowrap;
-    }
-
-    .lock-meta-indie + .lock-meta-links::before {
-      content: none;
     }
   }
 
@@ -1328,10 +1362,6 @@
     .mobile-site-bar .fluent-btn:last-child {
       flex: 0 0 auto;
       min-width: 72px;
-    }
-
-    .welcome-tip {
-      display: none;
     }
   }
 
@@ -1498,9 +1528,15 @@
     flex-direction: column;
     height: 100%;
     min-height: 100%;
-    background: var(--color-win-fill);
+    background: color-mix(in srgb, var(--color-win-fill) 82%, transparent);
     color: var(--color-win-text);
     overflow: hidden;
+  }
+
+  html:has(.native-shell),
+  html:has(.native-shell) body,
+  html:has(.native-shell) #app {
+    background: transparent;
   }
 
   .native-shell.is-flyout {
@@ -1575,7 +1611,6 @@
 [data-motion="reduce"] .toast-card,
 [data-motion="reduce"] .taskbar,
 [data-motion="reduce"] .lock-rise,
-[data-motion="reduce"] .welcome-tip,
 [data-motion="reduce"] .desktop-overlay,
 [data-motion="reduce"] .power-screen,
 [data-motion="reduce"] .jump-list,
@@ -1679,7 +1714,6 @@
   .win-toast,
   .taskbar,
   .lock-rise,
-  .welcome-tip,
   .desktop-overlay,
   .power-screen,
   .jump-list,
@@ -1721,22 +1755,40 @@
 
   .taskbar {
     justify-content: flex-start;
-    padding: 0 6px calc(env(safe-area-inset-bottom) + 0px) 6px;
+    padding: 0 6px env(safe-area-inset-bottom);
     height: calc(48px + env(safe-area-inset-bottom));
+    align-items: center;
+  }
+
+  .tray {
+    position: static;
+    margin-left: auto;
+    height: 48px;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    flex: 0 0 auto;
   }
 
   .taskbar-btn.hide-mobile,
-  .tray-btn.hide-mobile {
-    display: none;
+  .tray-btn.hide-mobile,
+  .hide-mobile {
+    display: none !important;
   }
 
-  .win-window {
-    inset: 0 0 calc(120px + env(safe-area-inset-bottom)) 0 !important;
-    width: 100% !important;
+  .win-window,
+  .win-window.is-maximized,
+  .win-window.is-maximized:not(.is-dragging) {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: calc(120px + env(safe-area-inset-bottom)) !important;
+    width: auto !important;
     height: auto !important;
+    max-width: none !important;
     border-radius: 0;
+    box-shadow: none;
     animation: none;
-    max-width: 100% !important;
   }
 
   .win-shell {
@@ -1770,10 +1822,6 @@
 
   .win-shell-body {
     padding: 14px 14px 18px;
-  }
-
-  .flyout.is-pinned {
-    display: none !important;
   }
 
   .flyout {

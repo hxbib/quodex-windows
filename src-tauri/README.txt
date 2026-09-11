@@ -1,5 +1,5 @@
-Quodex for Windows
-==================
+Quodex for Windows 1.1.0
+========================
 
 Tray companion to https://github.com/hxbib/Quodex (macOS). Track ChatGPT
 usage, banked resets, and pooled capacity. Independent project — not
@@ -14,6 +14,10 @@ Run
 
 If Windows still blocks the file, right-click Quodex.exe → Properties →
 Unblock → Apply.
+
+Windows 11 already includes WebView2. Windows 10 usually has it through
+Edge; if the window does not open, install Microsoft Edge WebView2
+Runtime (Evergreen) from Microsoft.
 
 What it does
 ------------
@@ -33,8 +37,9 @@ What it does
   on. Newly observed banked resets notify even with the bell off.
 - Usage is rechecked every 30 minutes from the background process, and
   again when the PC wakes.
-- Windows 11: Mica/Acrylic frames. Windows 10 (1809+): solid frames.
-  Same tracker. No extra WebView2 runtime.
+- The UI runs in the system WebView2. The tracker, vault, and network
+  allowlist run in a native process — Chromium is not bundled.
+- Taskbar jump list includes Refresh usage.
 
 Quit
 ----
@@ -44,4 +49,4 @@ Close does not quit.
 Licenses
 --------
 Quodex source: LICENSE.txt (MIT).
-Electron / Chromium: LICENSE.electron.txt and LICENSES.chromium.html.
+WebView2 is part of Windows / Edge and keeps Microsoft's terms.

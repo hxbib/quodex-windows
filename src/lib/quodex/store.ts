@@ -1,8 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { fetchAccountUsage, isNativeApp, nativeDeleteTokens, nativeHasToken, nativeNotify, pollDeviceLogin, startDeviceLogin } from "@/lib/openai/api";
-import { createDemoAccounts, isLandingFreeSample, landingEmail, refreshDemoSnapshot, DEMO_NOW } from "./demo";
-import { expirationFromToken, identityFromIdToken } from "./jwt";
+import { createDemoAccounts, isLandingFreeSample, landingEmail, refreshDemoSnapshot } from "./demo";
 import { quotaEvents } from "./transitions";
 import {
   AUTO_REFRESH_MS,
@@ -59,10 +58,11 @@ interface QuodexState {
   toggleNotifications: (accountID: string) => Promise<void>;
   restoreDemo: () => void;
   clearDemo: () => void;
+  restoreFromIdentities: (identities: { accountID: string; email: string; plan: string }[]) => void;
 }
 
-const initialAccounts = nativeSeed() ? [] : createDemoAccounts(DEMO_NOW);
-const initialRefreshStates = seedStates(initialAccounts, DEMO_NOW);
+const initialAccounts = nativeSeed() ? [] : createDemoAccounts(Date.now());
+const initialRefreshStates = seedStates(initialAccounts, Date.now());
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -110,7 +110,7 @@ export const useQuodexStore = create<QuodexState>()(
       isSorting: false,
       lastRefreshAt: null,
       lastRefreshAttemptAt: null,
-      now: DEMO_NOW,
+      now: Date.now(),
       toast: null,
       loginPresented: false,
       loginState: { kind: "idle" },
@@ -120,40 +120,44 @@ export const useQuodexStore = create<QuodexState>()(
 
       hydrate: () => {
         const now = Date.now();
-        if (get().accounts.length === 0) {
-          if (isNativeApp() || get().demosCleared) {
-            set({ hydrated: true, hasInitialized: true, accounts: [], refreshStates: {}, tokens: {}, now });
-            return;
-          }
-          const accounts = createDemoAccounts(now);
+        if (isNativeApp()) {
           set({
             hydrated: true,
             hasInitialized: true,
-            accounts,
-            refreshStates: seedStates(accounts, now),
+            accounts: get().accounts,
             tokens: {},
-            demosCleared: false,
             now,
           });
           return;
         }
-        const accounts = isNativeApp()
-          ? get().accounts
-          : get().accounts
-              .filter((account) => !isLandingFreeSample(account))
-              .map((account) => ({ ...account, email: landingEmail(account.email) }));
-        const states = { ...get().refreshStates };
-        if (!isNativeApp()) {
-          for (const account of get().accounts) {
-            if (isLandingFreeSample(account)) delete states[account.id];
-          }
+        if (get().demosCleared) {
+          const live = get().accounts
+            .filter((account) => !account.isDemo && !isLandingFreeSample(account))
+            .map((account) => ({ ...account, email: landingEmail(account.email) }));
+          set({
+            hydrated: true,
+            hasInitialized: true,
+            accounts: live,
+            tokens: {},
+            refreshStates: seedStates(live, now),
+            now,
+          });
+          return;
         }
+        const live = get().accounts
+          .filter((account) => !account.isDemo && !isLandingFreeSample(account))
+          .map((account) => ({ ...account, email: landingEmail(account.email) }));
+        const demos = createDemoAccounts(now);
+        const paid = live.filter((account) => displayIsPaid(account.plan));
+        const unpaid = live.filter((account) => !displayIsPaid(account.plan));
+        const accounts = [...paid, ...demos, ...unpaid];
         set({
           hydrated: true,
           hasInitialized: true,
           accounts,
           tokens: {},
-          refreshStates: Object.keys(states).length > 0 ? states : seedStates(accounts, now),
+          refreshStates: seedStates(accounts, now),
+          demosCleared: false,
           now,
         });
       },
@@ -225,7 +229,7 @@ export const useQuodexStore = create<QuodexState>()(
 
       pollLogin: async () => {
         if (!isNativeApp()) return;
-        const { loginState, loginTarget, accounts, tokens } = get();
+        const { loginState, loginTarget, accounts } = get();
         if (loginState.kind !== "waiting") return;
         try {
           const result = await pollDeviceLogin({
@@ -233,24 +237,14 @@ export const useQuodexStore = create<QuodexState>()(
             userCode: loginState.userCode,
           });
           if (result.status === "pending") return;
-          const payload = result as {
-            identity?: { accountID: string; email: string; plan: string };
-            idToken?: string;
-            accessToken?: string;
-          };
-          const identity = payload.identity ?? identityFromIdToken(payload.idToken ?? "");
+          if (result.status !== "complete" || !result.identity) {
+            throw new Error("The service returned an invalid response.");
+          }
+          const identity = result.identity;
           if (loginTarget && identity.accountID !== loginTarget.accountID) {
             throw new Error(
               `This sign-in belongs to ${identity.email}, not ${loginTarget.email}. No session was changed.`,
             );
-          }
-          const accessToken = typeof payload.accessToken === "string" ? payload.accessToken : undefined;
-          const idToken = typeof payload.idToken === "string" ? payload.idToken : undefined;
-          if (accessToken) {
-            const expiration = expirationFromToken(accessToken);
-            if (expiration && expiration <= Date.now()) {
-              throw new Error("This session expired or was rejected. Sign in again; Quodex never retries expired tokens.");
-            }
           }
 
           const existing = accounts.find((account) => account.id === identity.accountID);
@@ -288,13 +282,7 @@ export const useQuodexStore = create<QuodexState>()(
 
           set({
             accounts: nextAccounts,
-            tokens:
-              idToken && accessToken
-                ? {
-                    ...tokens,
-                    [identity.accountID]: { idToken, accessToken },
-                  }
-                : tokens,
+            tokens: {},
             refreshStates: {
               ...get().refreshStates,
               [identity.accountID]: { kind: "idle" },
@@ -456,7 +444,7 @@ export const useQuodexStore = create<QuodexState>()(
 
       restoreDemo: () => {
         if (isNativeApp()) return;
-        const demos = createDemoAccounts();
+        const demos = createDemoAccounts(Date.now());
         const live = get().accounts.filter((account) => !account.isDemo);
         const accounts = [...live.filter((account) => displayIsPaid(account.plan)), ...demos, ...live.filter((account) => !displayIsPaid(account.plan))];
         set({
@@ -476,6 +464,32 @@ export const useQuodexStore = create<QuodexState>()(
         }
         set({ accounts: live, refreshStates: states, demosCleared: live.length === 0 });
         get().showToast("Sample accounts removed.", "success");
+      },
+
+      restoreFromIdentities: (identities) => {
+        if (!identities.length) return;
+        const have = new Set(get().accounts.map((account) => account.id));
+        const now = Date.now();
+        const added: AccountRecord[] = [];
+        for (const identity of identities) {
+          if (have.has(identity.accountID)) continue;
+          added.push({
+            id: identity.accountID,
+            email: identity.email,
+            plan: identity.plan,
+            addedAt: now,
+            lastSnapshot: null,
+            resetNotificationsEnabled: false,
+            lastKnownBankedResetCount: null,
+          });
+        }
+        if (added.length === 0) return;
+        const accounts = [...get().accounts, ...added];
+        set({
+          accounts,
+          refreshStates: { ...get().refreshStates, ...seedStates(added, now) },
+          hasInitialized: true,
+        });
       },
     }),
     {
@@ -551,25 +565,14 @@ async function refreshAccount(accountID: string, set: SetState, get: GetState) {
     });
     return;
   }
-  const tokens = get().tokens[accountID];
-  if (!tokens && !(await nativeHasToken(accountID))) {
+  if (!(await nativeHasToken(accountID))) {
     set({
       refreshStates: { ...get().refreshStates, [accountID]: { kind: "requiresLogin" } },
     });
     return;
   }
-  if (tokens) {
-    const expiration = expirationFromToken(tokens.accessToken);
-    if (expiration && expiration <= Date.now()) {
-      set({
-        refreshStates: { ...get().refreshStates, [accountID]: { kind: "requiresLogin" } },
-      });
-      return;
-    }
-  }
   try {
     const result = await fetchAccountUsage({
-      accessToken: tokens?.accessToken,
       accountID,
     });
     if (!result.ok) {

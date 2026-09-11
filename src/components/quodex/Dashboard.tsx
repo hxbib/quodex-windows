@@ -3,10 +3,12 @@ import { ArrowDownUp, Pin, Plus, RotateCw, AppWindow } from "lucide-react";
 import { AccountCard } from "./AccountCard";
 import { LoginView } from "./LoginView";
 import { PoolSummary } from "./PoolSummary";
+import { QuodexAppIcon } from "@/components/icons";
 import { useDesktopStore } from "@/lib/desktop/store";
 import { emptyFootnote } from "@/lib/quodex/copy";
 import { MAXIMUM_ACCOUNTS } from "@/lib/quodex/types";
 import { useQuodexStore } from "@/lib/quodex/store";
+import { isNativeApp } from "@/lib/openai/api";
 import { cn } from "@/lib/utils";
 
 function pinFlyout(next: boolean) {
@@ -48,11 +50,8 @@ export function Dashboard({ variant }: { variant: "window" | "flyout" }) {
       ) : null}
 
       <header className="flex items-center gap-2 px-3 pb-1 pt-2">
-        <div className="grid size-6 place-items-center rounded-md bg-quodex text-white shadow-[inset_0_1px_0_rgb(255_255_255_/_28%)]">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4.4 8.2a7.6 7.6 0 1 1 0 7.6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-            <path d="M8.6 12a3.4 3.4 0 1 1 1 2.4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-          </svg>
+        <div className="grid size-6 place-items-center">
+          <QuodexAppIcon size={24} />
         </div>
         <div className="min-w-0 flex-1">
           <h1 className="text-[13px] font-semibold leading-none">Quodex</h1>
@@ -166,14 +165,17 @@ export function Dashboard({ variant }: { variant: "window" | "flyout" }) {
 }
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
+  const native = isNativeApp();
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
       <div className="grid size-14 place-items-center rounded-xl bg-quodex/15 text-quodex">
         <Plus size={24} />
       </div>
-      <h2 className="text-[16px] font-semibold">This desktop is a preview</h2>
+      <h2 className="text-[16px] font-semibold">{native ? "No accounts yet" : "This desktop is a preview"}</h2>
       <p className="max-w-sm text-[12px] text-win-muted">
-        Restore the sample accounts to keep exploring, or download the installer to sign in on your PC.
+        {native
+          ? "Sign in with OpenAI’s device code. Sessions stay in a DPAPI vault on this PC."
+          : "Restore the sample accounts to keep exploring, or download the Windows app to sign in on your PC."}
       </p>
       <button type="button" className="fluent-btn fluent-btn-accent" onClick={onAdd}>
         Add an account

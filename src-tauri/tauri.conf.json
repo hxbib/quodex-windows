@@ -1,0 +1,69 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Quodex",
+  "version": "1.1.0",
+  "identifier": "com.quodex.Quodex",
+  "build": {
+    "frontendDist": "frontend"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Quodex",
+        "width": 560,
+        "height": 720,
+        "minWidth": 420,
+        "minHeight": 480,
+        "visible": false,
+        "resizable": true,
+        "decorations": false,
+        "transparent": true,
+        "shadow": true,
+        "backgroundColor": "#20202000",
+        "skipTaskbar": false
+      },
+      {
+        "label": "flyout",
+        "title": "Quodex",
+        "url": "index.html?flyout=1",
+        "width": 420,
+        "height": 640,
+        "visible": false,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "shadow": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "focus": true,
+        "backgroundColor": "#20202000"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost https://ipc.localhost; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "publisher": "Sadman Habib",
+    "copyright": "MIT",
+    "category": "Utility",
+    "shortDescription": "ChatGPT usage tracker",
+    "longDescription": "Tray companion that shows ChatGPT usage limits and banked resets across multiple accounts.",
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      }
+    }
+  }
+}

@@ -1,8 +1,7 @@
 node_modules/
-electron/renderer/
-electron/openai.bundle.mjs
-electron/quodex.ico
-electron/quodex.png
+src-tauri/target/
+src-tauri/frontend/
+src-tauri/gen/
 artifacts/
 dist/
 *.log

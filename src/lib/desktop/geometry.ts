@@ -59,6 +59,15 @@ export function centeredRect(vw: number, vh: number, w: number, h: number): Rect
   };
 }
 
+export function fitRect(rect: Rect, vw: number, vh: number): Rect {
+  const bounds = viewportRect(vw, vh);
+  const w = Math.min(Math.max(Math.min(MIN_W, bounds.w), rect.w), bounds.w);
+  const h = Math.min(Math.max(Math.min(MIN_H, bounds.h), rect.h), bounds.h);
+  const x = Math.min(Math.max(-w + 80, rect.x), bounds.w - 80);
+  const y = Math.min(Math.max(0, rect.y), Math.max(0, bounds.h - h));
+  return { x, y, w, h };
+}
+
 export function clampRect(rect: Rect, vw: number, vh: number): Rect {
   const bounds = viewportRect(vw, vh);
   const w = Math.min(Math.max(MIN_W, rect.w), bounds.w);
@@ -80,7 +89,7 @@ export function windowFrameRect(win: WindowState, vw: number, vh: number): Rect 
   if (win.maximized) return viewportRect(vw, vh);
   const snapped = snapRect(win.snap, vw, vh);
   if (snapped) return snapped;
-  return { x: win.x, y: win.y, w: win.w, h: win.h };
+  return fitRect({ x: win.x, y: win.y, w: win.w, h: win.h }, vw, vh);
 }
 
 export const WINDOW_META: Record<WindowId, { title: string; hint: string }> = {

@@ -17,11 +17,11 @@ export function SettingsPage() {
       <h1 className="text-[22px] font-semibold">Quodex</h1>
       <p className="mt-1 text-[13px] text-win-subtle">
         {native
-          ? "Windows tray companion — DPAPI vault, open at login, and reset toasts."
-          : "This live Windows 11 page is the product site. Sample accounts are for exploring. Download the installer to sign in — sessions there are sealed with DPAPI."}
+          ? "Windows tray companion — DPAPI vault, system WebView2, open at login, and reset toasts."
+          : "This live Windows 11 page is the product site. Sample accounts are for exploring. Download the Windows app to sign in — sessions there are sealed with DPAPI."}
       </p>
 
-      {native ? <NativeAppearanceSection /> : null}
+      <NativeAppearanceSection />
       <WindowLifecycleSection native={native} />
 
       <section className="quodex-card mt-3">
@@ -65,7 +65,7 @@ export function SettingsPage() {
         <p className="mt-1 text-[12px] leading-relaxed text-win-subtle">
           {native
             ? "Access tokens never enter this window. They live in a DPAPI-sealed vault under %APPDATA%\\Quodex, bound to your Windows user the way Keychain is bound to a Mac login. Email and usage snapshots stay local. Quodex does not submit chats, redeem banked resets, or send credentials to unapproved hosts."
-            : "This website never stores a ChatGPT session. Download the installer to sign in — access tokens are sealed with Windows DPAPI on your PC. Independent project, not affiliated with OpenAI."}
+            : "This website never stores a ChatGPT session. Download the Windows app to sign in — access tokens are sealed with Windows DPAPI on your PC. Independent project, not affiliated with OpenAI."}
         </p>
       </section>
     </div>
@@ -138,7 +138,7 @@ function WindowLifecycleSection({ native }: { native: boolean }) {
   };
 
   return (
-    <section className={cn("quodex-card", native ? "mt-3" : "mt-5")}>
+    <section className="quodex-card mt-3">
       <h2 className="flex items-center gap-2 text-[14px] font-semibold">
         <SquareArrowDown size={15} /> Window
       </h2>
