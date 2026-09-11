@@ -70,22 +70,29 @@ if not src32.exists():
 }
 
 async function makeZip() {
+  const { spawnSync } = await import("node:child_process");
   if (existsSync(ZIP_PATH)) rmSync(ZIP_PATH, { force: true });
   mkdirSync(join(ROOT, "artifacts"), { recursive: true });
-  const script = `
-import os, zipfile
-src = ${JSON.stringify(OUT_DIR)}
-dst = ${JSON.stringify(ZIP_PATH)}
-parent = os.path.dirname(src)
-name = os.path.basename(src)
-os.chdir(parent)
-with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:
-    for dirpath, dirnames, filenames in os.walk(name):
-        for filename in filenames:
-            path = os.path.join(dirpath, filename)
-            z.write(path, path.replace(os.sep, "/"))
-`;
-  await run(pythonBin(), ["-c", script]);
+  const scriptPath = join(tmpdir(), "quodex-zip.py");
+  writeFileSync(
+    scriptPath,
+    [
+      "import os, zipfile",
+      `src = ${JSON.stringify(OUT_DIR)}`,
+      `dst = ${JSON.stringify(ZIP_PATH)}`,
+      "parent = os.path.dirname(src)",
+      "name = os.path.basename(src)",
+      "os.chdir(parent)",
+      'with zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as z:',
+      "    for dirpath, dirnames, filenames in os.walk(name):",
+      "        for filename in filenames:",
+      "            path = os.path.join(dirpath, filename)",
+      '            z.write(path, path.replace(os.sep, "/"))',
+      "",
+    ].join("\n"),
+  );
+  const result = spawnSync(pythonBin(), [scriptPath], { cwd: ROOT, stdio: "inherit" });
+  if (result.status !== 0) throw new Error("zip");
 }
 
 function collectReleaseDir() {
