@@ -1,9 +1,7 @@
 import type { AccountRecord } from "./types";
 
-/** Stable instant so SSR HTML matches the first client render. */
 export const DEMO_NOW = Date.UTC(2026, 8, 8, 0, 27, 0);
 
-/** Landing-page samples are Plus/Pro only — never Free Monthly. */
 export function isLandingFreeSample(account: {
   id?: string;
   plan?: string;

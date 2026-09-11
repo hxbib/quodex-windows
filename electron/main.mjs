@@ -40,7 +40,7 @@ function vaultBackend() {
     const backend = safeStorage.getSelectedStorageBackend?.();
     if (backend === "dpapi" || backend === "keychain" || backend === "basic_text") return backend;
   } catch {
-    /* older Electron */
+
   }
   return safeStorage.isEncryptionAvailable() ? "dpapi" : "basic_text";
 }
@@ -92,7 +92,7 @@ function saveVault(vault) {
     try {
       copyFileSync(file, bak);
     } catch {
-      /* best-effort backup */
+
     }
   }
   renameSync(tmp, file);
@@ -145,7 +145,7 @@ function wantsRefresh(argv = process.argv) {
 let pendingRefresh = false;
 
 function isEphemeralInstall() {
-  const path = process.execPath.replace(/\//g, "\\").toLowerCase();
+  const path = process.execPath.split("/").join("\\").toLowerCase();
   return (
     path.includes("\\downloads\\") ||
     path.includes("\\temp\\") ||
@@ -235,7 +235,7 @@ function quitQuodex() {
   try {
     tray?.destroy();
   } catch {
-    /* already gone */
+
   }
   tray = null;
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -302,7 +302,7 @@ function isDeviceLoginUrl(url) {
 }
 
 function applyTitleTheme(theme) {
-  /* Custom caption buttons follow the renderer theme; no OS overlay. */
+
   void theme;
 }
 
@@ -319,7 +319,7 @@ function installDesktopShortcut() {
       description: "ChatGPT usage tracker",
     });
   } catch {
-    /* desktop folder may be redirected or read-only */
+
   }
 }
 
@@ -336,7 +336,7 @@ function installStartMenuShortcut() {
       description: "ChatGPT usage tracker",
     });
   } catch {
-    /* portable folder may be read-only */
+
   }
 }
 
@@ -769,7 +769,7 @@ if (!gotLock) {
     try {
       tray?.destroy();
     } catch {
-      /* already gone */
+
     }
     tray = null;
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -777,6 +777,6 @@ if (!gotLock) {
     }
   });
   app.on("window-all-closed", () => {
-    /* Close-to-tray: hidden windows still exist. If they don't, stay resident. */
+
   });
 }

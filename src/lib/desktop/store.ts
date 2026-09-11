@@ -145,7 +145,6 @@ function pinnedFlyout(state: { quodexPinned: boolean }, requested: FlyoutId): Fl
   return state.quodexPinned ? "quodex-tray" : null;
 }
 
-/** Survives React remounts in this page, never a refresh — lock is the landing. */
 let liveUnlocked = false;
 
 export const ACCENTS: Record<
@@ -202,7 +201,7 @@ export const useDesktopStore = create<DesktopState>()(
         try {
           sessionStorage.removeItem("quodex-session-entered");
         } catch {
-          /* private mode */
+
         }
         const current = get().windows;
         const view = get().viewport;

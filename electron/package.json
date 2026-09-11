@@ -1,8 +1,8 @@
 {
   "name": "quodex",
   "productName": "Quodex",
-  "version": "1.0.1",
-  "description": "Windows ChatGPT usage tracker — tray companion to the macOS original.",
+  "version": "1.0.2",
+  "description": "Windows ChatGPT usage tracker \u2014 tray companion to the macOS original.",
   "private": true,
   "type": "module",
   "main": "main.mjs",

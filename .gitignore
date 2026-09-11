@@ -1,16 +1,9 @@
 node_modules/
-electron/node_modules/
 electron/renderer/
 electron/openai.bundle.mjs
 electron/quodex.ico
 electron/quodex.png
 artifacts/
-screenshots/
-.vercel/
-.output/
-.nitro/
-.tanstack/
-.grok/
 dist/
 *.log
 .DS_Store

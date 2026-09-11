@@ -1,5 +1,3 @@
-/** Bundled only into the desktop renderer — OpenAI traffic stays in the main process. */
-
 import type { ChatGPTIdentity } from "../quodex/jwt";
 import type { UsageSnapshot } from "../quodex/types";
 

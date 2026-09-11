@@ -6,7 +6,6 @@ export interface QuotaEvent {
   body: string;
 }
 
-/** Same rules as the macOS QuotaTransitionDetector. Banked alerts do not require the bell. */
 export function quotaEvents(input: {
   email: string;
   previous: AccountRecord;

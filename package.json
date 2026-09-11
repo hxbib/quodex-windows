@@ -1,9 +1,9 @@
 {
   "name": "quodex",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
-  "description": "Windows ChatGPT usage tracker — tray companion to the macOS original.",
+  "description": "Windows ChatGPT usage tracker \u2014 tray companion to the macOS original.",
   "license": "MIT",
   "homepage": "https://github.com/hxbib/quodex-windows",
   "repository": {
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/lib/quodex/transitions.test.ts src/lib/site.test.ts",
+    "test": "node --experimental-strip-types --test src/lib/quodex/transitions.test.ts src/lib/site.test.ts src/lib/openai/web-guard.test.ts",
     "pack:windows": "node scripts/pack-windows.mjs"
   },
   "dependencies": {

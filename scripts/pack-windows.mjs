@@ -1,9 +1,4 @@
 #!/usr/bin/env node
-/**
- * Cross-pack Quodex.exe (win32-x64) from Linux without Wine.
- * Downloads the official Electron binary, drops in the native renderer,
- * patches the PE icon/version with resedit, zips a portable folder.
- */
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -205,15 +200,15 @@ async function patchExecutable(exePath, icoPath) {
     versions = [created];
   }
   const version = versions[0];
-  version.setFileVersion(1, 0, 1, 0, 1033);
-  version.setProductVersion(1, 0, 1, 0, 1033);
+  version.setFileVersion(1, 0, 2, 0, 1033);
+  version.setProductVersion(1, 0, 2, 0, 1033);
   version.setStringValues(
     { lang: 1033, codepage: 1200 },
     {
       FileDescription: "Quodex",
       ProductName: "Quodex",
-      ProductVersion: "1.0.1",
-      FileVersion: "1.0.1",
+      ProductVersion: "1.0.2",
+      FileVersion: "1.0.2",
       OriginalFilename: "Quodex.exe",
       InternalName: "Quodex",
       CompanyName: "Sadman Habib",

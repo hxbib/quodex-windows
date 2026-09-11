@@ -51,6 +51,6 @@ export async function nativeNotify(title: string, body: string) {
     const { useDesktopStore } = await import("@/lib/desktop/store");
     useDesktopStore.getState().pushNotification({ title, body, source: "quodex" });
   } catch {
-    /* desktop chrome not mounted */
+
   }
 }

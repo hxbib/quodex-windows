@@ -171,7 +171,7 @@ export async function pollDeviceLoginRequest(data: { deviceAuthID: string; userC
   if (!tokens.id_token || !tokens.access_token) {
     throw new Error("The service returned an invalid response.");
   }
-  // Refresh tokens are discarded. Quodex never retries an expired ChatGPT session.
+
   void tokens.refresh_token;
   return {
     status: "complete" as const,

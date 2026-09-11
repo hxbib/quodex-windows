@@ -1,11 +1,10 @@
-/** Public product URLs for the Windows landing page. */
 export const SITE = {
   name: "Quodex",
   product: "Quodex for Windows",
   tagline: "Know your limits. Own your resets.",
   summary:
     "A tray companion for every ChatGPT account — live usage, pooled capacity, countdowns, and banked resets.",
-  /** GitHub release of the Windows port — never the macOS DMG repo. */
+
   download: "https://github.com/hxbib/quodex-windows/releases/latest",
   asset: "/Quodex-windows-x64.zip",
   source: "https://github.com/hxbib/quodex-windows",
@@ -32,7 +31,6 @@ function triggerDownload(href: string, filename?: string) {
   link.remove();
 }
 
-/** Prefer a same-origin zip (this preview). Fall back to the GitHub Windows release. */
 export function downloadWindowsApp() {
   const local = SITE.asset;
   void fetch(local, { method: "HEAD" })
