@@ -16,7 +16,7 @@ unzip Quodex-windows-src.zip
 cd Quodex-windows-src
 git init
 git add .
-git commit -m "Quodex for Windows 1.1.0"
+git commit -m "Quodex for Windows 1.1.1"
 git branch -M main
 git remote add origin https://github.com/hxbib/quodex-windows.git
 git push -u origin main
@@ -32,8 +32,8 @@ npm run pack:windows
 Needs Rust stable. On Windows, MSVC Build Tools. On Linux/macOS, `cargo-xwin`. GitHub Actions packs on `windows-latest`.
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.1.1
+git push origin v1.1.1
 ```
 
 Attach `Quodex-windows-x64.zip` and `SHA256SUMS.txt`. Paste `GITHUB-RELEASE.md` as the body.

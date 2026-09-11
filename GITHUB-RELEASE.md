@@ -1,4 +1,4 @@
-# Quodex for Windows 1.1.0
+# Quodex for Windows 1.1.1
 
 Portable tray companion to the [macOS original](https://github.com/hxbib/Quodex). Independent project — not affiliated with OpenAI.
 
@@ -20,8 +20,9 @@ Verify the zip against `SHA256SUMS.txt` from this release.
 
 ## Also in this release
 
-- Native Tauri 2 + WebView2 shell. Chromium is no longer bundled. The zip is ~2 MB; `Quodex.exe` is ~5 MB.
-- DPAPI vault for ChatGPT sessions (`%APPDATA%\Quodex`). No plaintext fallback. Existing Electron vaults are imported.
+- Production WebView CSS now includes the layout utilities the window and flyout actually use (padding, flex, type). 1.1.0 dropped them because Tailwind only scanned `src/native`.
+- Native Tauri 2 + WebView2 shell. Chromium is not bundled. The zip is ~2 MB; `Quodex.exe` is ~5 MB.
+- DPAPI vault for ChatGPT sessions (`%APPDATA%\\Quodex`). No plaintext fallback. Existing Electron vaults are imported.
 - Open at login on first run (hidden start).
 - Device-code login in the system browser. Expired sessions are never retried.
 - Banked-reset toasts without the bell; scheduled reset toasts with the bell.

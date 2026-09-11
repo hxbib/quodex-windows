@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1
+
+Production CSS now includes every utility the window and flyout use.
+
+- Native Vite root is `src/native`, so Tailwind previously scanned only that folder and dropped `flex` / padding / type classes in the packed exe.
+- `@import "tailwindcss" source(".");` scans `src/` so the shipped WebView layout matches the source.
+
 ## 1.1.0
 
 Native Windows shell. The tracker no longer ships Chromium.
